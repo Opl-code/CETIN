@@ -5,34 +5,50 @@
   <title>JSON to CSV Converter</title>
 </head>
 <body>
-  <h1>JSON to CSV Converter</h1>
-  <textarea id="jsonInput" rows="15" cols="80" placeholder="Paste your JSON here..."></textarea><br>
-  <button onclick="convertToCSV()">Convert to CSV</button>
-  <br><br>
+  <h1>JSON to CSV Converter (KIA → ROP_ID)</h1>
+
+  <input type="file" id="jsonFile" accept=".json"><br><br>
+  <button onclick="handleFile()">Convert to CSV</button><br><br>
+
   <a id="downloadLink" style="display:none;">Download CSV</a>
 
   <script>
-    function convertToCSV() {
-      let input = document.getElementById('jsonInput').value;
-      let data;
-      try {
-        data = JSON.parse(input);
-      } catch (e) {
-        alert("Invalid JSON!");
+    function handleFile() {
+      const fileInput = document.getElementById('jsonFile');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Please select a JSON file.");
         return;
       }
 
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = JSON.parse(e.target.result);
+          convertToCSV(data);
+        } catch (error) {
+          alert("Invalid JSON file.");
+        }
+      };
+
+      reader.readAsText(file);
+    }
+
+    function convertToCSV(data) {
       let grouped = {};
       for (let item of data) {
-        let a = item["ID(a)"];
-        let b = item["ID(b)"];
-        if (!grouped[a]) grouped[a] = [];
-        grouped[a].push(b);
+        let kia = item["KIA"];
+        let rop = item["ROP_ID"];
+        if (!kia || !rop) continue;
+
+        if (!grouped[kia]) grouped[kia] = [];
+        grouped[kia].push(rop);
       }
 
-      let csvRows = [["ID(a);ID(b)"]];
-      for (let a in grouped) {
-        csvRows.push([`${a};${grouped[a].join(",")}`]);
+      let csvRows = [["KIA;ROP_ID"]];
+      for (let kia in grouped) {
+        csvRows.push([`${kia};${grouped[kia].join(",")}`]);
       }
 
       let csvContent = csvRows.map(e => e.join("")).join("\n");
