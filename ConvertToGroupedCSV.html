@@ -3,9 +3,96 @@
 <head>
   <meta charset="UTF-8">
   <title>CSV Grouping Tool (KIA + POLYGON_ID → ROP_ID)</title>
+  <style type="text/css">
+    table {
+    border-collapse: collapse;
+    border: 2px solid rgb(140 140 140);
+    font-family: sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    }
+
+    caption {
+    padding: 10px;
+    font-weight: bold;
+    }
+
+    thead,
+    tfoot {
+    background-color: rgb(228 240 245);
+    }
+
+    th,
+    td {
+    border: 1px solid rgb(160 160 160);
+    padding: 8px 10px;
+    }
+
+    td:last-of-type {
+    text-align: center;
+    }
+
+    tbody > tr:nth-of-type(even) {
+    background-color: rgb(237 238 242);
+    }
+  </style>
 </head>
 <body>
   <h1>CSV to Grouped CSV Converter (KIA + POLYGON_ID → ROP_ID)</h1>
+  <table>
+    <caption>
+        Expected input:
+    </caption>
+    <thead>
+        <tr>
+        <th scope="col">KIA,</th>
+        <th scope="col">POLYGON_ID,</th>
+        <th scope="col">ROP_ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td>KIA1,</td>
+        <td>POLY1,</td>
+        <td>ROP1</td>
+        </tr>
+        <tr>
+        <td>KIA1,</td>
+        <td>POLY1,</td>
+        <td>ROP2</td>
+        </tr>
+        <tr>
+        <td>KIA2,</td>
+        <td>POLY2,</td>
+        <td>ROP3</td>
+        </tr>
+    </tbody>
+  </table>
+  <p></p>
+  <table>
+    <caption>
+        Output:
+    </caption>
+    <thead>
+        <tr>
+        <th scope="col">KIA;</th>
+        <th scope="col">POLYGON_ID;</th>
+        <th scope="col">ROP_ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td>KIA1;</td>
+        <td>POLY1;</td>
+        <td>ROP1,ROP2</td>
+        </tr>
+        <tr>
+        <td>KIA2;</td>
+        <td>POLY2;</td>
+        <td>ROP3</td>
+        </tr>
+    </tbody>
+  </table>
 
   <input type="file" id="csvFile" accept=".csv"><br><br>
   <button onclick="handleFile()">Convert to Grouped CSV</button><br><br>
