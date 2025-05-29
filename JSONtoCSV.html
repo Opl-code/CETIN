@@ -10,6 +10,7 @@
   <button onclick="convertToCSV()">Convert to CSV</button>
   <br><br>
   <a id="downloadLink" style="display:none;">Download CSV</a>
+
   <script>
     function convertToCSV() {
       let input = document.getElementById('jsonInput').value;
@@ -29,12 +30,12 @@
         grouped[a].push(b);
       }
 
-      let csvRows = [["ID(a)", "ID(b)"]];
+      let csvRows = [["ID(a);ID(b)"]];
       for (let a in grouped) {
-        csvRows.push([a, grouped[a].join(",")]);
+        csvRows.push([`${a};${grouped[a].join(",")}`]);
       }
 
-      let csvContent = csvRows.map(e => e.join(",")).join("\n");
+      let csvContent = csvRows.map(e => e.join("")).join("\n");
       let blob = new Blob([csvContent], { type: 'text/csv' });
       let url = URL.createObjectURL(blob);
 
