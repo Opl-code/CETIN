@@ -2,64 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>JSON to CSV Converter</title>
+  <title>CSV Grouping Tool (KIA + POLYGON_ID → ROP_ID)</title>
 </head>
 <body>
-  <h1>JSON to CSV Converter (KIA → ROP_ID)</h1>
+  <h1>CSV to Grouped CSV Converter (KIA + POLYGON_ID → ROP_ID)</h1>
 
-  <input type="file" id="jsonFile" accept=".json"><br><br>
-  <button onclick="handleFile()">Convert to CSV</button><br><br>
+  <input type="file" id="csvFile" accept=".csv"><br><br>
+  <button onclick="handleFile()">Convert to Grouped CSV</button><br><br>
 
   <a id="downloadLink" style="display:none;">Download CSV</a>
 
   <script>
     function handleFile() {
-      const fileInput = document.getElementById('jsonFile');
+      const fileInput = document.getElementById('csvFile');
       const file = fileInput.files[0];
 
       if (!file) {
-        alert("Please select a JSON file.");
+        alert("Please select a CSV file.");
         return;
       }
 
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
-          const data = JSON.parse(e.target.result);
-          convertToCSV(data);
-        } catch (error) {
-          alert("Invalid JSON file.");
+          const content = e.target.result;
+          const lines = content.split(/\r?\n/).filter(line => line.trim() !== "");
+          const header = lines[0].split(",");
+          const kiaIndex = header.indexOf("KIA");
+          const polygonIndex = header.indexOf("POLYGON_ID");
+          const ropIndex = header.indexOf("ROP_ID");
+
+          if (kiaIndex === -1 || polygonIndex === -1 || ropIndex === -1) {
+            alert("CSV must contain 'KIA', 'POLYGON_ID', and 'ROP_ID' headers.");
+            return;
+          }
+
+          const grouped = {};
+
+          for (let i = 1; i < lines.length; i++) {
+            const parts = lines[i].split(",");
+            const kia = parts[kiaIndex];
+            const polygon = parts[polygonIndex];
+            const rop = parts[ropIndex];
+            if (!kia || !polygon || !rop) continue;
+
+            const key = `${kia}|||${polygon}`; // composite key
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(rop);
+          }
+
+          const output = [["KIA;POLYGON_ID;ROP_ID"]];
+          for (let key in grouped) {
+            const [kia, polygon] = key.split("|||");
+            output.push([`${kia};${polygon};${grouped[key].join(",")}`]);
+          }
+
+          const csvContent = output.map(row => row.join("")).join("\n");
+          const blob = new Blob([csvContent], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+
+          const downloadLink = document.getElementById('downloadLink');
+          downloadLink.href = url;
+          downloadLink.download = "grouped_output.csv";
+          downloadLink.style.display = "inline";
+          downloadLink.textContent = "Download CSV";
+        } catch (err) {
+          alert("Error processing CSV file.");
         }
       };
 
       reader.readAsText(file);
-    }
-
-    function convertToCSV(data) {
-      let grouped = {};
-      for (let item of data) {
-        let kia = item["KIA"];
-        let rop = item["ROP_ID"];
-        if (!kia || !rop) continue;
-
-        if (!grouped[kia]) grouped[kia] = [];
-        grouped[kia].push(rop);
-      }
-
-      let csvRows = [["KIA;ROP_ID"]];
-      for (let kia in grouped) {
-        csvRows.push([`${kia};${grouped[kia].join(",")}`]);
-      }
-
-      let csvContent = csvRows.map(e => e.join("")).join("\n");
-      let blob = new Blob([csvContent], { type: 'text/csv' });
-      let url = URL.createObjectURL(blob);
-
-      let downloadLink = document.getElementById('downloadLink');
-      downloadLink.href = url;
-      downloadLink.download = "output.csv";
-      downloadLink.style.display = "inline";
-      downloadLink.textContent = "Download CSV";
     }
   </script>
 </body>
